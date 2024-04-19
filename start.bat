@@ -6,5 +6,4 @@ pip install tk
 cls
 pip install pillow
 cls
-python main.py
-pause
+pythonw main.py
