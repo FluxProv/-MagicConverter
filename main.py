@@ -120,6 +120,15 @@ class MagicConverter:
             subprocess.run(command, check=True)
             messagebox.showinfo("Успех", "Конвертация завершена успешно!")
 
+            # Удаление папки build и файлов .spec после успешной конвертации
+            build_dir = os.path.join(os.path.dirname(input_path), "build")
+            spec_file = os.path.join(os.path.dirname(input_path), os.path.splitext(os.path.basename(input_path))[0] + ".spec")
+
+            if os.path.exists(build_dir):
+                shutil.rmtree(build_dir)
+            if os.path.exists(spec_file):
+                os.remove(spec_file)
+
             # Открываем папку с exe-файлом
             output_folder = os.path.dirname(os.path.abspath(input_path))
             os.system(f'explorer "{output_folder}"')
