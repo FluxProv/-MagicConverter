@@ -13,13 +13,9 @@ class MagicConverter:
         self.root.configure(bg="#222222")  # Тёмный фон
         self.root.resizable(False, False)  # Запрет изменения размеров окна
 
-        # Создание директории 'out' для сохранения exe-файла
-        self.output_dir = os.path.join(os.path.dirname(__file__), "out")
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-
         # Иконка программы
-        self.root.iconbitmap(os.path.join(os.path.dirname(__file__), "images", "icon.ico"))
+        icon_path = os.path.join(os.path.dirname(__file__), "images", "icon.ico")
+        self.root.iconbitmap(icon_path)
 
         # Кастомные иконки для кнопок закрытия и сворачивания
         self.close_icon = Image.open(os.path.join(os.path.dirname(__file__), "images", "close.ico"))
@@ -60,6 +56,12 @@ class MagicConverter:
         self.onefile_check = tk.Checkbutton(self.root, text="Конвертировать в один файл", variable=self.onefile_var, fg="#ffffff", bg="#333333", selectcolor="#77dd77")
         self.onefile_check.pack()
 
+        # Галочка для конвертации без консоли
+        self.noconsole_var = tk.BooleanVar()
+        self.noconsole_var.set(False)
+        self.noconsole_check = tk.Checkbutton(self.root, text="Конвертировать без консоли", variable=self.noconsole_var, fg="#ffffff", bg="#333333", selectcolor="#77dd77")
+        self.noconsole_check.pack()
+
         # Кнопка "Конвертировать"
         self.convert_button = tk.Button(self.root, text="Конвертировать", command=self.convert, bg="#77dd77", relief=tk.FLAT)
         self.convert_button.pack(pady=(20, 10))
@@ -95,11 +97,8 @@ class MagicConverter:
         input_path = self.file_path_entry.get()
 
         if not os.path.exists(input_path):
-            messagebox.showerror("Ошибка", "Указанный файл или папка не найдены.")
+            messagebox.showerror("Ошибка", "Указанный файл не найден.")
             return
-
-        # Путь для сохранения exe-файла
-        output_path = os.path.join(self.output_dir, "output.exe")
 
         # Команда для конвертации
         command = ['pyinstaller', '--windowed']
@@ -112,13 +111,18 @@ class MagicConverter:
             else:
                 messagebox.showwarning("Предупреждение", "Указанный файл иконки не найден.")
 
+        if self.noconsole_var.get():
+            command.append('--noconsole')
+
         command.append(input_path)
 
         try:
             subprocess.run(command, check=True)
-            messagebox.showinfo("Успех", "Конвертация завершена успешно!Исполняемый файл сохранен в папке dirst.")
-            shutil.move(os.path.join(os.path.dirname(input_path), "dist", "output.exe"), output_path)
-            messagebox.showinfo("Успех", f"Исполняемый файл сохранен в папке dirst")
+            messagebox.showinfo("Успех", "Конвертация завершена успешно!")
+
+            # Открываем папку с exe-файлом
+            output_folder = os.path.dirname(os.path.abspath(input_path))
+            os.system(f'explorer "{output_folder}"')
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Ошибка", f"Ошибка при конвертации: {e}")
 
